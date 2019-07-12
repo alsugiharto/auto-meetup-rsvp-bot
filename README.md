@@ -1,4 +1,4 @@
-# meetup-auto-rsvp
+# auto-meetup-rsvp-bot
 
 A simple console app for lazy people to RSVP an event in meetup.com built in Python and Selenium using Chrome
 
@@ -60,8 +60,8 @@ CHECK_TIME_SECOND = 40 # how often you want the app checks if there is a new upc
 # Setup and Run
 After all dependencies are installed and credential file is ready, then install and run
 ```shell
-git clone https://github.com/alsugiharto/auto-meetup-rsvp.git
-cd auto-meetup-rsvp
+git clone https://github.com/alsugiharto/auto-meetup-rsvp-bot.git
+cd auto-meetup-rsvp-bot
 python main.py
 ```
 
