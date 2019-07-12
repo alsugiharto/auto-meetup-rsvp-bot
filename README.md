@@ -20,7 +20,9 @@ The main purpose has been served.
 There are some other minor feature I would like to add:
 - send email or sms for RSVP success
 - add more browsers options to use
-- multiple events option
+- multiple events options
+- logging on off option
+- scheduling
 - add quit feature (yes! no quit feature yet)
 - apply OOP
 
@@ -52,7 +54,7 @@ Make a python file named credentials.py with the following content and save.
 ```shell
 USER_NAME = 'your_email_address@gmail.com'
 PASSWORD = 'your_password'
-GROUP_NAME = 'Name-of-your-meetup-group-you-want-to-RSVP-to' # make sure your group target only have one event at a time.
+GROUP_NAME = 'Name-of-your-meetup-group-you-want-to-RSVP-to' # make sure your group target only has one event at a time.
 CHECK_TIME_SECOND = 40 # how often you want the app checks if there is a new upcoming event
 ```
 
@@ -75,7 +77,7 @@ In case the session doesn't work, then it will simply try to login again.
 The app will check the event list of the group you mention in credentials.py.
 There are 4 possibilities:
 - There are no event, then the app will keep checking each CHECK_TIME_SECOND time
-- There are multiple events, unfortunatelly multiple events to choose is not possible yet. This will stop the app. Make sure your group target only have one event at a time.
+- There are multiple events, unfortunatelly multiple events to choose is not possible yet. This will stop the app. Make sure your group target only has one event at a time.
 - There is one upcoming event, the RSVP process should be started here. You will receive a message when it is. This will stop the app.
 - Any error appears. This will stop the app.
 
