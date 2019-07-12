@@ -19,12 +19,13 @@ We don't have this problem using Selenium.
 The main purpose has been served.
 There are some other minor features I would like to add:
 - send email or SMS for RSVP success
-- add more browsers options to use
+- more browsers options to use
 - multiple events options
 - logging on off option
 - scheduling
-- add quit feature (yes! no quit feature yet)
+- quit feature (yes! no quit feature yet)
 - apply OOP
+- unit test
 
 # How to install dependencies
 

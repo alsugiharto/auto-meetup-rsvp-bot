@@ -5,16 +5,14 @@
 import time
 import datetime
 import logging
+# for error tracing
 import traceback
+# to save and load cookies
+import pickle
 
-# the driver for web control
-# 1 install selenium (https://selenium-python.readthedocs.io/installation.html)
-# 2 install chrome driver using our activation path (/usr/local/bin/) (https://selenium-python.readthedocs.io/installation.html)
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
-# to save and load cookies
-import pickle
 
 # where credentials are saved
 import credentials
@@ -26,8 +24,8 @@ import credentials
 LINK_LOGIN = 'https://secure.meetup.com/login/'
 LINK_EVENT_LIST = 'https://www.meetup.com/{}/events/'.format(credentials.GROUP_NAME)
 APP_NAME = 'meetupAutoRSVP'
+COOKIES_FILE_NAME = 'cookies.pkl'
 CONFIG_HIDE_PROCESS = True
-CHECK_TIME_SECOND = 40
 
 # =============================================
 # Code
@@ -67,15 +65,18 @@ def alert_message(message, is_error=False):
 # login using old cookie, no need to re login
 def cookies_load(browser):
     browser.get(LINK_LOGIN)
-    for cookie in pickle.load(open("cookies.pkl", "rb")):
-        browser.add_cookie({k: cookie[k] for k in ('name', 'value', 'domain', 'path') if k in cookie})
+    try:
+        for cookie in pickle.load(open(COOKIES_FILE_NAME, "rb")):
+            browser.add_cookie({k: cookie[k] for k in ('name', 'value', 'domain', 'path') if k in cookie})
+    except FileNotFoundError:
+        alert_message('No cookies yet')
     browser.get(LINK_LOGIN)
 
 
 # save cookies for next use
 def cookies_save(browser):
     browser.get(LINK_EVENT_LIST)
-    pickle.dump(browser.get_cookies(), open("cookies.pkl", "wb"))
+    pickle.dump(browser.get_cookies(), open(COOKIES_FILE_NAME, "wb"))
 
 
 # login using old cookie, no need to re login
@@ -182,7 +183,7 @@ def main():
                 close_everything(browser)
 
             # sleep before re action
-            time.sleep(CHECK_TIME_SECOND)
+            time.sleep(credentials.CHECK_TIME_SECOND)
 
         # exit
         except KeyboardInterrupt:
