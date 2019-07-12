@@ -5,8 +5,8 @@ A simple console app for lazy people to RSVP an event in meetup.com built in Pyt
 ### Why
 
 I recently joined a football meetup group, where they only accept the first 12 RSVP players.
-The event is always full after 3 minutes the event posted. You need a dedication and quick fingers to be top 12 players out ot 870 members.
-As a lazy person using this tool, for the first time i successfully RSVPed in the second place of the list, right after the event host. Hooray!
+The event is always full after 3 minutes the event posted. You need dedication and quick fingers to be top 12 players out of 870 members.
+As a lazy person using this tool, for the first time, I successfully RSVPed in the second place of the list, right after the event host. Hooray!
 
 ### Why Selenium not API?
 
@@ -17,8 +17,8 @@ We don't have this problem using Selenium.
 ### What to Do
 
 The main purpose has been served.
-There are some other minor feature I would like to add:
-- send email or sms for RSVP success
+There are some other minor features I would like to add:
+- send email or SMS for RSVP success
 - add more browsers options to use
 - multiple events options
 - logging on off option
@@ -60,7 +60,7 @@ CHECK_TIME_SECOND = 40 # how often you want the app checks if there is a new upc
 
 
 # Setup and Run
-After all dependencies are installed and credential file is ready, then install and run
+After all of the dependencies are installed and the credential file is ready, then install and run
 ```shell
 git clone https://github.com/alsugiharto/auto-meetup-rsvp-bot.git
 cd auto-meetup-rsvp-bot
@@ -70,14 +70,14 @@ python main.py
 # How it works
 
 When you use the app for the first time. 
-The app will try to login with the given credential and save the session in your machine for the next use.
+The app will try to log in with the given credential and save the session in your machine for the next use.
 In the next use, the app won't try to login anymore but instead using the previous working session. 
 In case the session doesn't work, then it will simply try to login again.
 
 The app will check the event list of the group you mention in credentials.py.
 There are 4 possibilities:
-- There are no event, then the app will keep checking each CHECK_TIME_SECOND time
-- There are multiple events, unfortunatelly multiple events to choose is not possible yet. This will stop the app. Make sure your group target only has one event at a time.
+- There is no event, then the app will keep checking each CHECK_TIME_SECOND time
+- There are multiple events, unfortunately, multiple events to choose is not possible yet. This will stop the app. Make sure your group target only has one event at a time.
 - There is one upcoming event, the RSVP process should be started here. You will receive a message when it is. This will stop the app.
 - Any error appears. This will stop the app.
 
