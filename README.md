@@ -22,10 +22,10 @@ There are some other minor features I would like to add:
 - more browsers options to use
 - multiple events options
 - save and load credentials feature
-- scheduling
 - quit feature
-- fix waiting problem: cookies and rsvp test
 - apply OOP
+- scheduling
+- fix waiting problem: cookies and rsvp test
 
 # How to install dependencies
 
@@ -51,21 +51,24 @@ Make sure you choose the same version like your Chrome version
 [how to install selenium](https://selenium-python.readthedocs.io/installation.html)
 
 # How to set Credentials
-Make a python file named credentials.py with the following content and save.
+Make a json file root/auto_meetup_rsvp_bot/data/user_account.json with the following content and save.
 ```shell
-USER_NAME = 'your_email_address@gmail.com'
-PASSWORD = 'your_password'
-GROUP_NAME = 'Name-of-your-meetup-group-you-want-to-RSVP-to' # make sure your group target only has one event at a time.
-CHECK_TIME_SECOND = 40 # how often you want the app checks if there is a new upcoming event
+{
+"USER_NAME" = "your_email_address@gmail.com",
+"PASSWORD" = "your_password"
+}
 ```
-
+Make a json file root/auto_meetup_rsvp_bot/data/group_list.json with the following content and save.
+```shell
+["Name-of-your-meetup-group-you-want-to-RSVP-to"] # make sure your group target only has one event at a time.
+```
 
 # Setup and Run
 After all of the dependencies are installed and the credential file is ready, then install and run
 ```shell
 git clone https://github.com/alsugiharto/auto-meetup-rsvp-bot.git
-cd auto-meetup-rsvp-bot
-python main.py
+cd auto-meetup-rsvp-bot/auto_meetup_rsvp_bot
+python __init__.py
 ```
 
 # How it works
@@ -75,10 +78,12 @@ The app will try to log in with the given credential and save the session in you
 In the next use, the app won't try to login anymore but instead using the previous working session. 
 In case the session doesn't work, then it will simply try to login again.
 
-The app will check the event list of the group you mention in credentials.py.
-There are 4 possibilities:
+There are several possibilities:
 - There is no event, then the app will keep checking each CHECK_TIME_SECOND time
 - There are multiple events, unfortunately, multiple events to choose is not possible yet. This will stop the app. Make sure your group target only has one event at a time.
+- There is one upcoming event, but it's cancelled. This will stop the app.
+- There is one upcoming event, but the event status is RSVP already. This will stop the app.
+- There is one upcoming event, but the event status is "you can't go". This will stop the app.
 - There is one upcoming event, the RSVP process should be started here. You will receive a message when it is. This will stop the app.
 - Any error appears. This will stop the app.
 
