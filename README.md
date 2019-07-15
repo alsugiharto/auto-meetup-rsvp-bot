@@ -21,10 +21,10 @@ There are some other minor features I would like to add:
 - send email or SMS for RSVP success
 - more browsers options to use
 - multiple events options
-- logging on off option
-- save and load credentials freature
+- save and load credentials feature
 - scheduling
-- quit feature (yes! no quit feature yet)
+- quit feature
+- fix cookies waiting problem
 - apply OOP
 
 # How to install dependencies

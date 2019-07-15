@@ -6,24 +6,58 @@ import json
 import traceback
 # to save and load cookies
 import pickle
+# to use relative path
+import os.path
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
-with open('data/user_account.json') as json_data:
-    USER_ACCOUNT = json.load(json_data)
 
-with open('data/group_list.json') as json_data:
-    GROUP_LIST = json.load(json_data)
-
+MAIN_PATH = os.path.abspath(os.path.dirname(__file__))
 LINK_LOGIN = 'https://secure.meetup.com/login/'
 LINK_EVENT_LIST = 'https://www.meetup.com/{}/events/'
 APP_NAME = 'meetupAutoRSVP'
 COOKIES_FILE_NAME = 'cookies.pkl'
+CONFIG_COOKIES = False
+CONFIG_MESSAGES = True
+CONFIG_LOGGING = True
 CONFIG_HIDE_PROCESS = True
 CONFIG_HIDE_IMAGES = True
 CHECK_TIME_SECOND = 40
+USER_ACCOUNT_JSON = os.path.join(MAIN_PATH, 'data/user_account.json')
+USER_GROUP_JSON = os.path.join(MAIN_PATH, 'data/group_list.json')
+USER_ACCOUNT = ''
+GROUP_LIST = ''
+
+with open(USER_ACCOUNT_JSON) as json_data_account:
+    USER_ACCOUNT = json.load(json_data_account)
+
+# ========================================
+# CONSTANT UPDATING FUNCTION
+# ========================================
+
+
+# either manually set the group name for testing or from json file for real
+def update_group_name(new_name=''):
+    global GROUP_LIST
+
+    if new_name is '':
+        with open(USER_GROUP_JSON) as json_data_group:
+            GROUP_LIST = json.load(json_data_group)
+    else:
+        data = list()
+        data.append(new_name)
+        GROUP_LIST = data
+
+
+# return the updated link to event list with group name in it
+def get_link_event_list():
+    return LINK_EVENT_LIST.format(GROUP_LIST[0])
+
+# ========================================
+# SETUP AND INIT FUNCTION
+# ========================================
 
 
 # setting up and init of logging and selenium
@@ -61,6 +95,10 @@ def setup():
     browser = webdriver.Chrome(options=chrome_options)
     return browser
 
+# ========================================
+# LOG AND MESSAGE FUNCTION
+# ========================================
+
 
 # console message and logging
 def alert_message(message, is_error=False):
@@ -69,15 +107,17 @@ def alert_message(message, is_error=False):
     if is_error is True:
         # add traceback for debugging if error
         message = "{} {}".format(message, traceback.format_exc())
-        logging.error(message)
+        if CONFIG_LOGGING:
+            logging.error(message)
     else:
-        logging.info(message)
-    print("{}: {}".format(time_now, message))
+        if CONFIG_LOGGING:
+            logging.info(message)
+    if CONFIG_MESSAGES:
+        print("{}: {}".format(time_now, message))
 
-
-# return the updated link to event list with group name in it
-def get_link_event_list():
-    return LINK_EVENT_LIST.format(GROUP_LIST[0])
+# ========================================
+# COOKIES FUNCTION
+# ========================================
 
 
 # login using old cookie, no need to re login
@@ -88,7 +128,7 @@ def cookies_load(browser):
             browser.add_cookie({k: cookie[k] for k in ('name', 'value', 'domain', 'path') if k in cookie})
     except FileNotFoundError:
         alert_message('No cookies yet')
-    browser.get(LINK_LOGIN)
+    return True
 
 
 # save cookies for next use
@@ -96,22 +136,19 @@ def cookies_save(browser):
     browser.get(get_link_event_list())
     pickle.dump(browser.get_cookies(), open(COOKIES_FILE_NAME, "wb"))
 
+# ========================================
+# SELENIUM FUNCTION
+# ========================================
+
 
 # login using old cookie, no need to re login
 def login(browser):
-    alert_message("Logging in.")
-    elem = browser.find_element_by_id("email")
-    elem.send_keys(USER_ACCOUNT.USER_NAME)
-    elem = browser.find_element_by_id("password")
-    elem.send_keys(USER_ACCOUNT.PASSWORD)
+    browser.get(LINK_LOGIN)
+    elem = browser.find_element_by_css_selector("#email")
+    elem.send_keys(USER_ACCOUNT['USER_NAME'])
+    elem = browser.find_element_by_css_selector("#password")
+    elem.send_keys(USER_ACCOUNT['PASSWORD'])
     elem.send_keys(Keys.RETURN)
-
-
-# exit all
-def close_everything(browser):
-    alert_message("Exit.")
-    browser.close()
-    exit()
 
 
 # check if there are one upcoming event
@@ -122,18 +159,35 @@ def new_coming_event_count(browser):
 
 # check if the event available (not cancelled)
 def is_event_available(browser):
-    return len(browser.find_elements_by_css_selector('.eventTimeDisplay.text--strikethrough')) == 0
+    if len(browser.find_elements_by_css_selector('.eventTimeDisplay.text--strikethrough')) > 0:
+        # event is cancelled
+        available_code = 1
+    elif len(browser.find_elements_by_css_selector('.eventRsvpIndicator.eventRsvpIndicator--yes')) > 0:
+        # event has been booked already
+        available_code = 2
+    elif len(browser.find_elements_by_css_selector('.eventRsvpIndicator.eventRsvpIndicator--no')) > 0:
+        # event has been booked already and cancelled (cannot go)
+        available_code = 3
+    else:
+        # available
+        available_code = 4
+
+    return available_code
+
+
+def is_logged_in(browser):
+    return browser.find_elements_by_css_selector('#globalNav.authenticated')
 
 
 # go to the event link, click RSVP and check if RSVP works
 def rsvp(browser):
     # go to the event link
-    event_button = browser.find_elements_by_css_selector('.eventList-list .eventCardHead--title')
-    event_link = event_button[0].get_attribute("href")
+    event_button = browser.find_element_by_css_selector('.eventList-list .eventCardHead--title')
+    event_link = event_button.get_attribute("href")
     browser.get(event_link)
 
     # click RSVP
-    browser.find_elements_by_css_selector('.rsvpIndicator-button')[0].click()
+    browser.find_element_by_css_selector('.rsvpIndicator-button').click()
 
     # check if RSVP
     browser.get(event_link)
@@ -141,22 +195,45 @@ def rsvp(browser):
     return len(browser.find_elements_by_css_selector('.rsvpIndicator-button')) != 0
 
 
-def main():
+# exit all
+def close_everything(browser):
+    alert_message("Exit.")
+    browser.close()
+    exit()
+
+
+# ========================================
+# INTERACTION FUNCTION
+# ========================================
+
+
+# setting up the browser and login, decide to use cookies or new login
+def main_login_setup(cookies=True):
     # setting up and init of logging and selenium
     browser = setup()
 
-    # login using old cookie, no need to re login
-    cookies_load(browser)
+    if cookies:
+        # login using old cookie, no need to re login
+        cookies_load(browser)
 
     # check is the cookie working, otherwise login
-    if browser.find_elements_by_css_selector('#globalNav.authenticated'):
+    if is_logged_in(browser):
         alert_message("Cookies work, no login needed.")
     else:
         # login
+        alert_message("Logging in.")
         login(browser)
 
-    # save cookies for next use
-    cookies_save(browser)
+    if cookies:
+        # save cookies for next use
+        cookies_save(browser)
+
+    return browser
+
+
+def main():
+    # setting up the browser and login, decide to use cookies or new login
+    browser = main_login_setup(CONFIG_COOKIES)
 
     count_try = 0
     # looping each time to check
@@ -185,8 +262,14 @@ def main():
                 # check if the event available (not cancelled)
                 is_available = is_event_available(browser)
 
-                if is_available is False:
+                if is_available is 1:
                     alert_message('But it has been cancelled.')
+
+                elif is_available is 2:
+                    alert_message('But you already RSVP.')
+
+                elif is_available is 3:
+                    alert_message('But you already RSVP and cancel it (cannot go).')
 
                 else:
                     # go to the event link, click RSVP and check if RSVP works
@@ -216,4 +299,5 @@ def main():
 
 
 if __name__ == '__main__':
+    update_group_name()
     main()
