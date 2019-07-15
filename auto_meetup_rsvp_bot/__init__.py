@@ -19,6 +19,7 @@ LINK_LOGIN = 'https://secure.meetup.com/login/'
 LINK_EVENT_LIST = 'https://www.meetup.com/{}/events/'
 APP_NAME = 'meetupAutoRSVP'
 COOKIES_FILE_NAME = 'cookies.pkl'
+# TODO: fix cookies problem  (waiting problem)
 CONFIG_COOKIES = False
 CONFIG_MESSAGES = True
 CONFIG_LOGGING = True
@@ -151,6 +152,10 @@ def login(browser):
     elem.send_keys(Keys.RETURN)
 
 
+def is_logged_in(browser):
+    return len(browser.find_elements_by_css_selector('#globalNav.authenticated')) > 0
+
+
 # check if there are one upcoming event
 def new_coming_event_count(browser):
     browser.get(get_link_event_list())
@@ -173,10 +178,6 @@ def is_event_available(browser):
         available_code = 4
 
     return available_code
-
-
-def is_logged_in(browser):
-    return browser.find_elements_by_css_selector('#globalNav.authenticated')
 
 
 # go to the event link, click RSVP and check if RSVP works

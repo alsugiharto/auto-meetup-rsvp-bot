@@ -24,7 +24,7 @@ There are some other minor features I would like to add:
 - save and load credentials feature
 - scheduling
 - quit feature
-- fix cookies waiting problem
+- fix waiting problem: cookies and rsvp test
 - apply OOP
 
 # How to install dependencies
