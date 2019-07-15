@@ -1,10 +1,7 @@
-# =============================================
-# Drivers
-# =============================================
-
 import time
 import datetime
 import logging
+import json
 # for error tracing
 import traceback
 # to save and load cookies
@@ -14,23 +11,19 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
-# where credentials are saved
-import credentials
+with open('data/user_account.json') as json_data:
+    USER_ACCOUNT = json.load(json_data)
 
-# =============================================
-# Constants
-# =============================================
+with open('data/group_list.json') as json_data:
+    GROUP_LIST = json.load(json_data)
 
 LINK_LOGIN = 'https://secure.meetup.com/login/'
-LINK_EVENT_LIST = 'https://www.meetup.com/{}/events/'.format(credentials.GROUP_NAME)
+LINK_EVENT_LIST = 'https://www.meetup.com/{}/events/'
 APP_NAME = 'meetupAutoRSVP'
 COOKIES_FILE_NAME = 'cookies.pkl'
 CONFIG_HIDE_PROCESS = True
 CONFIG_HIDE_IMAGES = True
-
-# =============================================
-# Code
-# =============================================
+CHECK_TIME_SECOND = 40
 
 
 # setting up and init of logging and selenium
@@ -82,6 +75,11 @@ def alert_message(message, is_error=False):
     print("{}: {}".format(time_now, message))
 
 
+# return the updated link to event list with group name in it
+def get_link_event_list():
+    return LINK_EVENT_LIST.format(GROUP_LIST[0])
+
+
 # login using old cookie, no need to re login
 def cookies_load(browser):
     browser.get(LINK_LOGIN)
@@ -95,7 +93,7 @@ def cookies_load(browser):
 
 # save cookies for next use
 def cookies_save(browser):
-    browser.get(LINK_EVENT_LIST)
+    browser.get(get_link_event_list())
     pickle.dump(browser.get_cookies(), open(COOKIES_FILE_NAME, "wb"))
 
 
@@ -103,9 +101,9 @@ def cookies_save(browser):
 def login(browser):
     alert_message("Logging in.")
     elem = browser.find_element_by_id("email")
-    elem.send_keys(credentials.USER_NAME)
+    elem.send_keys(USER_ACCOUNT.USER_NAME)
     elem = browser.find_element_by_id("password")
-    elem.send_keys(credentials.PASSWORD)
+    elem.send_keys(USER_ACCOUNT.PASSWORD)
     elem.send_keys(Keys.RETURN)
 
 
@@ -118,7 +116,7 @@ def close_everything(browser):
 
 # check if there are one upcoming event
 def new_coming_event_count(browser):
-    browser.get(LINK_EVENT_LIST)
+    browser.get(get_link_event_list())
     return len(browser.find_elements_by_css_selector('.list-item'))
 
 
@@ -203,7 +201,7 @@ def main():
                 close_everything(browser)
 
             # sleep before re action
-            time.sleep(credentials.CHECK_TIME_SECOND)
+            time.sleep(CHECK_TIME_SECOND)
 
         # exit
         except KeyboardInterrupt:
