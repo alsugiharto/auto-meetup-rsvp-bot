@@ -20,6 +20,7 @@ LINK_LOGIN = 'https://secure.meetup.com/login/'
 LINK_EVENT_LIST = 'https://www.meetup.com/{}/events/'
 APP_NAME = 'meetupAutoRSVP'
 COOKIES_FILE_NAME = 'cookies.pkl'
+ERROR_HTML_PRINT_FILE_NAME = 'page_source.html'
 # TODO: fix cookies problem  (waiting problem)
 CONFIG_COOKIES = False
 CONFIG_MESSAGES = True
@@ -119,6 +120,12 @@ def alert_message(message, is_error=False):
             logging.info(message)
     if CONFIG_MESSAGES:
         print("{}: {}".format(time_now, message))
+
+
+# save the HTML error page
+def save_error_page(browser):
+    with open(ERROR_HTML_PRINT_FILE_NAME, "w", encoding="utf-8") as f:
+        f.write(browser.page_source)
 
 # ========================================
 # COOKIES FUNCTION
@@ -300,6 +307,8 @@ def main():
         # other unknown error
         except Exception as e:
             alert_message("{}".format(e), True)
+            # save the HTML error page
+            save_error_page(browser)
             # exit all
             close_everything(browser)
 
