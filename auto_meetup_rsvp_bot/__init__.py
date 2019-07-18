@@ -2,6 +2,7 @@ import time
 import datetime
 import logging
 import json
+import random
 # for error tracing
 import traceback
 # to save and load cookies
@@ -25,11 +26,14 @@ CONFIG_MESSAGES = True
 CONFIG_LOGGING = True
 CONFIG_HIDE_PROCESS = True
 CONFIG_HIDE_IMAGES = True
-CHECK_TIME_SECOND = 40
+CHECK_TIME_JSON = os.path.join(MAIN_PATH, 'data/check_time.json')
 USER_ACCOUNT_JSON = os.path.join(MAIN_PATH, 'data/user_account.json')
 USER_GROUP_JSON = os.path.join(MAIN_PATH, 'data/group_list.json')
 USER_ACCOUNT = ''
 GROUP_LIST = ''
+
+with open(CHECK_TIME_JSON) as json_data_second:
+    CHECK_TIME_SECOND = random.choice(json.load(json_data_second))
 
 with open(USER_ACCOUNT_JSON) as json_data_account:
     USER_ACCOUNT = json.load(json_data_account)
@@ -236,6 +240,7 @@ def main():
     # setting up the browser and login, decide to use cookies or new login
     browser = main_login_setup(CONFIG_COOKIES)
 
+    alert_message("Start checking {} every {} seconds".format(GROUP_LIST[0], CHECK_TIME_SECOND))
     count_try = 0
     # looping each time to check
     while True:
