@@ -197,3 +197,4 @@ fabric.properties
 # meetup custom
 auto_meetup_rsvp_bot/**/group_list.json
 auto_meetup_rsvp_bot/**/user_account.json
+cookies.pkl
