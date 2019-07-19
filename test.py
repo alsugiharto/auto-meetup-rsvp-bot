@@ -1,12 +1,14 @@
 import unittest
+import time
 import auto_meetup_rsvp_bot
 
 # Test variables
-GROUP_NAME_NO_EVENT = ""
-GROUP_NAME_MULTI_EVENTS = ""
-GROUP_NAME_ONE_AVAILABLE = ""
-GROUP_NAME_ONE_CANNOT_GO = ""
-GROUP_NAME_ONE_ALREADY_RSVP = ""
+# You need to find several meetup groups with the following criteria
+GROUP_NAME_NO_EVENT = "Fast-ai-study-group-the-Netherlands"
+GROUP_NAME_MULTI_EVENTS = "Amsterdam-Language-Cafe"
+GROUP_NAME_ONE_AVAILABLE = "meetup-group-fdjaROuF"
+GROUP_NAME_ONE_CANNOT_GO = "Amsterdam-Futsal-5v5-Indoor-Football"
+GROUP_NAME_ONE_ALREADY_RSVP = "Ijburg-Futsal-Regulars"
 # difficult to find a group with cancelled upcoming event
 GROUP_NAME_ONE_CANCELLED = ""
 
@@ -14,33 +16,17 @@ GROUP_NAME_ONE_CANCELLED = ""
 class TestSum(unittest.TestCase):
 
     # login function test
-    def test_login(self):
+    def test01_login(self):
         # get browser
         browser = auto_meetup_rsvp_bot.setup()
-        # test before login
-        before_login = auto_meetup_rsvp_bot.is_logged_in(browser)
-        self.assertEqual(before_login, False)
         # login
         auto_meetup_rsvp_bot.login(browser)
         # test after login
         after_login = auto_meetup_rsvp_bot.is_logged_in(browser)
         self.assertEqual(after_login, True)
 
-    # is_event_available function test
-    # and
     # new_coming_event_count function test
-    def test_main_multi_event(self):
-        # update group name
-        auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_MULTI_EVENTS)
-        # get browser
-        browser = auto_meetup_rsvp_bot.setup()
-        # login
-        auto_meetup_rsvp_bot.login(browser)
-        # new_coming_event_count function test
-        test_result = auto_meetup_rsvp_bot.new_coming_event_count(browser)
-        self.assertGreater(test_result, 1)
-
-    def test_main_no_event(self):
+    def test02_count_no_event(self):
         # update group name
         auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_NO_EVENT)
         # get browser
@@ -51,7 +37,18 @@ class TestSum(unittest.TestCase):
         test_result = auto_meetup_rsvp_bot.new_coming_event_count(browser)
         self.assertEqual(test_result, 0)
 
-    def test_main_one_already_rsvp(self):
+    def test03_count_multi_event(self):
+        # update group name
+        auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_MULTI_EVENTS)
+        # get browser
+        browser = auto_meetup_rsvp_bot.setup()
+        # login
+        auto_meetup_rsvp_bot.login(browser)
+        # new_coming_event_count function test
+        test_result = auto_meetup_rsvp_bot.new_coming_event_count(browser)
+        self.assertGreater(test_result, 1)
+
+    def test04_count_one_already_rsvp(self):
         # update group name
         auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_ONE_ALREADY_RSVP)
         # get browsr
@@ -61,11 +58,31 @@ class TestSum(unittest.TestCase):
         # new_coming_event_count function test
         test_result = auto_meetup_rsvp_bot.new_coming_event_count(browser)
         self.assertEqual(test_result, 1)
+
+    def test05_count_one_available(self):
+        # update group name
+        auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_ONE_AVAILABLE)
+        # get browser
+        browser = auto_meetup_rsvp_bot.setup()
+        # login
+        auto_meetup_rsvp_bot.login(browser)
+        # new_coming_event_count function test
+        test_result = auto_meetup_rsvp_bot.new_coming_event_count(browser)
+        self.assertEqual(test_result, 1)
+
+    # is_event_available function test
+    def test06_available_one_already_rsvp(self):
+        # update group name
+        auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_ONE_ALREADY_RSVP)
+        # get browsr
+        browser = auto_meetup_rsvp_bot.setup()
+        # login
+        auto_meetup_rsvp_bot.login(browser)
         # is_event_available function test
         test_result = auto_meetup_rsvp_bot.is_event_available(browser)
         self.assertEqual(test_result, 2)
 
-    def test_main_one_cannot_go(self):
+    def test07_available_one_cannot_go(self):
         # update group name
         auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_ONE_CANNOT_GO)
         browser = auto_meetup_rsvp_bot.setup()
@@ -77,45 +94,62 @@ class TestSum(unittest.TestCase):
         test_result = auto_meetup_rsvp_bot.is_event_available(browser)
         self.assertEqual(test_result, 3)
 
-    def test_main_one_available(self):
+    def test08_available_one_available(self):
         # update group name
         auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_ONE_AVAILABLE)
         # get browser
         browser = auto_meetup_rsvp_bot.setup()
         # login
         auto_meetup_rsvp_bot.login(browser)
-        # new_coming_event_count function test
-        test_result = auto_meetup_rsvp_bot.new_coming_event_count(browser)
-        self.assertEqual(test_result, 1)
         # is_event_available function test
         test_result = auto_meetup_rsvp_bot.is_event_available(browser)
         self.assertEqual(test_result, 4)
 
-    # TODO: fix RSVP test (waiting problem)
-    # rsvp function test
-    # def test_rsvp(self):
-    #     # update group name
-    #     auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_ONE_AVAILABLE)
-    #     # get browser
-    #     browser = auto_meetup_rsvp_bot.setup()
-    #     # login
-    #     auto_meetup_rsvp_bot.login(browser)
-    #
-    #     # before rsvp
-    #     # new_coming_event_count function test
-    #     test_result = auto_meetup_rsvp_bot.new_coming_event_count(browser)
-    #     self.assertEqual(test_result, 1)
-    #     # is_event_available function test
-    #     test_result = auto_meetup_rsvp_bot.is_event_available(browser)
-    #     self.assertEqual(test_result, 4)
-    #
-    #     # rsvp
-    #     auto_meetup_rsvp_bot.rsvp(browser)
-    #
-    #     # after rsvp
-    #     # is_event_available function test
-    #     test_result = auto_meetup_rsvp_bot.is_event_available(browser)
-    #     self.assertEqual(test_result, 2)
+    # RSVP function test
+    def test09_rsvp_is_rsvp_check_yes(self):
+        # update group name
+        auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_ONE_ALREADY_RSVP)
+        # get browser
+        browser = auto_meetup_rsvp_bot.setup()
+        # login
+        auto_meetup_rsvp_bot.login(browser)
+        # is rsvp check yes test
+        test_result = auto_meetup_rsvp_bot.is_rsvp_check(browser)
+        self.assertEqual(test_result, True)
+
+    def test10_rsvp_is_rsvp_check_no(self):
+        # update group name
+        auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_ONE_AVAILABLE)
+        # get browser
+        browser = auto_meetup_rsvp_bot.setup()
+        # login
+        auto_meetup_rsvp_bot.login(browser)
+        # is rsvp check no test
+        test_result = auto_meetup_rsvp_bot.is_rsvp_check(browser)
+        self.assertEqual(test_result, False)
+
+    # WILL ACTUALLY RSVP!
+    def test11_rsvp_final(self):
+        # update group name
+        auto_meetup_rsvp_bot.update_group_name(GROUP_NAME_ONE_AVAILABLE)
+        # get browser
+        browser = auto_meetup_rsvp_bot.setup()
+        # login
+        auto_meetup_rsvp_bot.login(browser)
+
+        # delay
+        time.sleep(10)
+
+        # rsvp
+        auto_meetup_rsvp_bot.rsvp(browser)
+
+        # delay
+        time.sleep(10)
+
+        # after rsvp
+        # is rsvp check yes test
+        test_result = auto_meetup_rsvp_bot.is_rsvp_check(browser)
+        self.assertEqual(test_result, True)
 
 
 if __name__ == '__main__':

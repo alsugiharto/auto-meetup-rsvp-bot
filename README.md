@@ -25,7 +25,7 @@ There are some other minor features I would like to add:
 - quit feature
 - apply OOP
 - scheduling
-- fix waiting problem: cookies and rsvp test
+- fix waiting problem: cookies
 
 # How to install dependencies
 
@@ -55,7 +55,8 @@ Make a json file root/auto_meetup_rsvp_bot/data/user_account.json with the follo
 ```shell
 {
 "USER_NAME" = "your_email_address@gmail.com",
-"PASSWORD" = "your_password"
+"PASSWORD" = "your_password",
+"ACCOUNT_ID" = "meetup_account_id"
 }
 ```
 Make a json file root/auto_meetup_rsvp_bot/data/group_list.json with the following content and save.
