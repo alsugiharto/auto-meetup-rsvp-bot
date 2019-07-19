@@ -17,7 +17,14 @@ from selenium.webdriver.chrome.options import Options
 
 MAIN_PATH = os.path.abspath(os.path.dirname(__file__))
 LINK_LOGIN = 'https://secure.meetup.com/login/'
+# add group name
 LINK_EVENT_LIST = 'https://www.meetup.com/{}/events/'
+# add group name and event id
+LINK_EVENT_ONE = 'https://www.meetup.com/{}/events/{}/'
+# add group name and event id
+LINK_ATTENDEES_LIST = 'https://www.meetup.com/{}/events/{}/attendees'
+# add group name and user account id
+LINK_USER_PROFILE_HREF = '/{}/members/{}/profile/'
 APP_NAME = 'meetupAutoRSVP'
 COOKIES_FILE_NAME = 'cookies.pkl'
 ERROR_HTML_PRINT_FILE_NAME = 'page_source.html'
@@ -27,14 +34,16 @@ CONFIG_MESSAGES = True
 CONFIG_LOGGING = True
 CONFIG_HIDE_PROCESS = True
 CONFIG_HIDE_IMAGES = True
-CHECK_TIME_JSON = os.path.join(MAIN_PATH, 'data/check_time.json')
+CONFIG_TIME_WAIT_SELENIUM_SECOND = 10
+CONFIG_CHECK_TIME_SECOND = 60
+DELAY_RSVP_TIME_JSON = os.path.join(MAIN_PATH, 'data/delay_rsvp_time.json')
 USER_ACCOUNT_JSON = os.path.join(MAIN_PATH, 'data/user_account.json')
 USER_GROUP_JSON = os.path.join(MAIN_PATH, 'data/group_list.json')
 USER_ACCOUNT = ''
 GROUP_LIST = ''
 
-with open(CHECK_TIME_JSON) as json_data_second:
-    CHECK_TIME_SECOND = random.choice(json.load(json_data_second))
+with open(DELAY_RSVP_TIME_JSON) as json_data_second:
+    DELAY_RSVP_TIME_JSON = random.choice(json.load(json_data_second))
 
 with open(USER_ACCOUNT_JSON) as json_data_account:
     USER_ACCOUNT = json.load(json_data_account)
@@ -60,6 +69,21 @@ def update_group_name(new_name=''):
 # return the updated link to event list with group name in it
 def get_link_event_list():
     return LINK_EVENT_LIST.format(GROUP_LIST[0])
+
+
+# return the updated link to event one with group name and event id in it
+def get_link_event_one(event_id):
+    return LINK_EVENT_ONE.format(GROUP_LIST[0], event_id)
+
+
+# return the updated link to event one with group name and event id in it
+def get_link_attendees_list(event_id):
+    return LINK_ATTENDEES_LIST.format(GROUP_LIST[0], event_id)
+
+
+# return the updated link to user profile with group name and user account id in it
+def get_link_user_profile_href():
+    return LINK_USER_PROFILE_HREF.format(GROUP_LIST[0], USER_ACCOUNT['ACCOUNT_ID'])
 
 # ========================================
 # SETUP AND INIT FUNCTION
@@ -99,6 +123,8 @@ def setup():
 
     # selenium INIT
     browser = webdriver.Chrome(options=chrome_options)
+    # wait 10 seconds before each loading to make sure the page well loaded
+    browser.implicitly_wait(CONFIG_TIME_WAIT_SELENIUM_SECOND)
     return browser
 
 # ========================================
@@ -175,6 +201,7 @@ def new_coming_event_count(browser):
 
 # check if the event available (not cancelled)
 def is_event_available(browser):
+    browser.get(get_link_event_list())
     if len(browser.find_elements_by_css_selector('.eventTimeDisplay.text--strikethrough')) > 0:
         # event is cancelled
         available_code = 1
@@ -191,20 +218,47 @@ def is_event_available(browser):
     return available_code
 
 
-# go to the event link, click RSVP and check if RSVP works
-def rsvp(browser):
-    # go to the event link
+# get event_id
+def rsvp_get_event_id(browser):
+    browser.get(get_link_event_list())
     event_button = browser.find_element_by_css_selector('.eventList-list .eventCardHead--title')
     event_link = event_button.get_attribute("href")
-    browser.get(event_link)
+    event_id = os.path.split(os.path.dirname(event_link))[1]
+    return event_id
+
+
+# check rsvp status True for RSVP
+def is_rsvp_check(browser):
+    event_id = rsvp_get_event_id(browser)
+    # go to attendees page
+    attendees_link = get_link_attendees_list(event_id)
+    browser.get(attendees_link)
+    # check if user profile exists, yes means RSVP
+    profile_link = get_link_user_profile_href()
+    is_rsvp_return = len(browser.find_elements_by_css_selector('[href="{}"]'.format(profile_link))) > 0
+    return is_rsvp_return
+
+
+# go to the event link, click RSVP and check if RSVP works
+def rsvp(browser):
+    # get
+    event_id = rsvp_get_event_id(browser)
+
+    # waiting before RSVP, so that it's not too quick, avoid people wonder
+    alert_message('Delay, we are going to book in {} seconds'.format(DELAY_RSVP_TIME_JSON))
+    time.sleep(DELAY_RSVP_TIME_JSON)
 
     # click RSVP
+    browser.get(get_link_event_one(event_id))
     browser.find_element_by_css_selector('.rsvpIndicator-button').click()
 
-    # check if RSVP
-    browser.get(event_link)
-    alert_message('event link: {}'.format(event_link))
-    return len(browser.find_elements_by_css_selector('.rsvpIndicator-button')) != 0
+    # check if RSVP by checking if user profile exists in attendees list
+    is_rsvp = is_rsvp_check(browser)
+
+    # show which event has been booked
+    alert_message('event link: {}'.format(get_link_event_one(event_id)))
+
+    return is_rsvp
 
 
 # exit all
@@ -247,7 +301,7 @@ def main():
     # setting up the browser and login, decide to use cookies or new login
     browser = main_login_setup(CONFIG_COOKIES)
 
-    alert_message("Start checking {} every {} seconds".format(GROUP_LIST[0], CHECK_TIME_SECOND))
+    alert_message("Start checking {} every {} seconds".format(GROUP_LIST[0], CONFIG_CHECK_TIME_SECOND))
     count_try = 0
     # looping each time to check
     while True:
@@ -297,7 +351,7 @@ def main():
                 close_everything(browser)
 
             # sleep before re action
-            time.sleep(CHECK_TIME_SECOND)
+            time.sleep(CONFIG_CHECK_TIME_SECOND)
 
         # exit
         except KeyboardInterrupt:
@@ -314,5 +368,7 @@ def main():
 
 
 if __name__ == '__main__':
+    # update group here because for testing the group name is edited for each test
     update_group_name()
+    # run the rest
     main()
