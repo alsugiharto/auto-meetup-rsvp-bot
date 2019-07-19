@@ -4,11 +4,11 @@ import auto_meetup_rsvp_bot
 
 # Test variables
 # You need to find several meetup groups with the following criteria
-GROUP_NAME_NO_EVENT = "Fast-ai-study-group-the-Netherlands"
-GROUP_NAME_MULTI_EVENTS = "Amsterdam-Language-Cafe"
-GROUP_NAME_ONE_AVAILABLE = "meetup-group-fdjaROuF"
-GROUP_NAME_ONE_CANNOT_GO = "Amsterdam-Futsal-5v5-Indoor-Football"
-GROUP_NAME_ONE_ALREADY_RSVP = "Ijburg-Futsal-Regulars"
+GROUP_NAME_NO_EVENT = ""
+GROUP_NAME_MULTI_EVENTS = ""
+GROUP_NAME_ONE_AVAILABLE = ""
+GROUP_NAME_ONE_CANNOT_GO = ""
+GROUP_NAME_ONE_ALREADY_RSVP = ""
 # difficult to find a group with cancelled upcoming event
 GROUP_NAME_ONE_CANCELLED = ""
 
